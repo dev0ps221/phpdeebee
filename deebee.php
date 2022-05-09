@@ -67,27 +67,27 @@ class DeeBee{
     return DeeBee->Builder
   }
 
-  function _____registerAction(actionname,callback){
-    this[actionname] = callback
+  function _____registerAction($actionname,callback){
+    this[$actionname] = callback
   }
 
-  function _tbs(cb){
-    $this->_db().query(
-      `SHOW TABLES`,cb
+  function _tbs($cb){
+    $this->_db()->query(
+      `SHOW TABLES`,$cb
     )
   }
-  function _tb_exists(name,cb){
+  function _tb_exists($name,$cb){
     let exists = null
     $this->_tbs(
       (e,tbs)=>{
         
-        if(e) cb(exists)
-        else  tbs.length ? tbs.forEach(
+        if(e) $cb(exists)
+        else  count($tbs) ? tbs.forEach(
           (table,idx)=>{
             if(table[`Tables_in_${$this->dbname}`]==name) exists = table[`Tables_in_${$this->dbname}`]
-            if(idx+1==tbs.length)cb(exists)
+            if(idx+1==count($tbs))$cb(exists)
           }
-        ) : cb(exists)
+        ) : $cb(exists)
       }
     )
   }
@@ -133,7 +133,7 @@ class DeeBee{
   }
   function __newFieldStr({name,type,attrs}){
     let fieldstr = `${name} ${type}`
-    if(attrs&&attrs.length)attrs.forEach(
+    if(attrs&&count($attrs))attrs.forEach(
       attrname=>{
         fieldstr = `${fieldstr} ${attrname}`
       }
@@ -178,7 +178,7 @@ class DeeBee{
       keysStr = `${keysStr} ${$this->__newKeyStr({name:`PRIMARY KEY (${keys.primary})`,attrs:[]})}`
     }
     if(keys.hasOwnProperty('foreign') && keys.foreign!=undefined){
-      if(keys.foreign.length){
+      if(keys.count($foreign)){
         keys.foreign.forEach(
           key=>{
             key.name = `,FOREIGN KEY ${key.name}`
@@ -192,53 +192,53 @@ class DeeBee{
   function   __newTableReq({name,fields,keys}){
     return `CREATE TABLE IF NOT EXISTS ${name} (${$this->__newFieldsStr(fields)} , ${$this->__newKeysStr(keys)})`
   }
-  function   __createTable(table,cb){
+  function   __createTable(table,$cb){
     if(table){
       let req = $this->__newTableReq(table)
-      $this->_db().query(
-        req,cb
+      $this->_db()->query(
+        req,$cb
       )
     }else{
-      cb(`provided argument ${table} is incorrect`,null)
+      $cb(`provided argument ${table} is incorrect`,null)
     }
   }
-  function   __createDataBase(name,tables,cb){
+  function   __createDataBase(name,tables,$cb){
     let req = `create DATABASE IF NOT EXISTS ${name}`
-    $this->_db().query(
+    $this->_db()->query(
       req,(err,res)=>{
         if(err){
-          cb(err,res)
+          $cb(err,res)
         }else{
           if(res){
             let errs = []
             let ress = []
-            if(tables.length){
+            if(count($tables)){
               tables.forEach(
                 (table,idx)=>{
                   $this->__createTable(table,(e,r)=>{
                     errs.push(e)
                     ress.push(r)
-                    if(idx+1==tables.length){
-                      cb(errs,ress,tables.length)
+                    if(idx+1==count($tables)){
+                      $cb(errs,ress,count($tables))
                     }
                   })
                 }
               )
               return
             }else{
-              cb([err],[res])
+              $cb([err],[res])
             }
           }else{
-            cb(['erreur non comprise||non understood error'],[res])
+            $cb(['erreur non comprise||non understood error'],[res])
           }
         }
       }
     )
   }
-  function   __dropTable(table,cb){
+  function   __dropTable(table,$cb){
     let req = `DROP TABLE ${table}`
-    $this->_db().query(
-      req,cb
+    $this->_db()->query(
+      req,$cb
     )
   }
   function _db(){
@@ -270,7 +270,7 @@ class DeeBee{
                   }if(r){
                     console.log('connected to mysql database')
                     $this->dbcreds.database = deebee
-                    $this->_db().config.database=deebee
+                    $this->_db()->config.database=deebee
                     $this->setupTables()
                   }
                 }
@@ -304,7 +304,7 @@ class DeeBee{
               $this->dbcreds.database,[],((e,r,tablessize)=>{
                   console.log(e,r)
                   let goterr=0
-                  if(e.length){
+                  if(count($e)){
                     e.forEach(
                       err=>{
                         if(err){
@@ -315,8 +315,8 @@ class DeeBee{
                     )
                   }
                   if(goterr==0){
-                    if(r && r.length){
-                      if(tablessize && (tablessize == r.length)){
+                    if(r && count($r)){
+                      if(tablessize && (tablessize == count($r))){
                         $this->__db()
                       }else{
                         $this->__db()
@@ -338,31 +338,31 @@ class DeeBee{
     }
   }
   function   __reqArr(fields_,vals_,statement){
-      for(let i = 0; i < (fields_.length) ; i++){
+      for(let i = 0; i < (count($fields_)) ; i++){
         statement.bindParam(":"+fields_[i],vals_[i]);
       }
       return statement;
   }
   function   __valsStr(vals_,bef='',aft=''){
     let vals="";
-    for(let i = 0 ; i < (vals_.length) ;i++ ){
-      vals+=(bef)+vals_[i]+(i+1 < (vals_.length) ? "," : "")+(aft);
+    for(let i = 0 ; i < (count($vals_)) ;i++ ){
+      vals+=(bef)+vals_[i]+(i+1 < (count($vals_)) ? "," : "")+(aft);
     }
 
     return vals;
   }
   function   __fvalStr(fields_=[],vals_=[],sep=',',bef='',aft='',vbef=""){
     let vals = "";
-    for(let i = 0 ; i < (vals_.length) ;i++ ){
-      vals+=(bef)+fields_[i]+"="+vbef+vals_[i]+(i+1 < (vals_.length) ? " "+sep+" " : "")+(aft);
+    for(let i = 0 ; i < (count($vals_)) ;i++ ){
+      vals+=(bef)+fields_[i]+"="+vbef+vals_[i]+(i+1 < (count($vals_)) ? " "+sep+" " : "")+(aft);
     }
     return vals;
   }
   function   __condsStr(fields_=[],vals_=[],bef=""){
-    return (fields_.length) ? " WHERE "+$this->__fvalStr(fields_,bef?fields_:vals_,"AND","","",bef) : "";
+    return (count($fields_)) ? " WHERE "+$this->__fvalStr(fields_,bef?fields_:vals_,"AND","","",bef) : "";
   }
   function   __selectFrom(table_,fields_=[],conds=[[],[]]){
-    return "SELECT "+$this->__valsStr(fields_)+" FROM "+ table_ +((conds.length) ? $this->__condsStr(conds[0],conds[1]) : "");
+    return "SELECT "+$this->__valsStr(fields_)+" FROM "+ table_ +((count($conds)) ? $this->__condsStr(conds[0],conds[1]) : "");
   }
   function   __delFrom(table_,conds=[[],[]]){
     return "DELETE  FROM "+ table_ + $this->__condsStr(conds[0],conds[1],":");
@@ -411,7 +411,7 @@ class DeeBee{
           ,conds_
         )
   }
-  function _delReq(table_,conds_,cb){
+  function _delReq(table_,conds_,$cb){
     return $this->_req(
       'delete',
       table_,
@@ -443,16 +443,16 @@ class DeeBee{
     let table  = '_notifications';
     return $this->_insertReq(table,fields,vals);
   }
-  function   ___login(user,pass,cb){
+  function   ___login(user,pass,$cb){
     $this->db.query(
       $this->___loginreq($this->_getUsersTable(),user,pass)
-      ,cb
+      ,$cb
     )
   }
-  function   ___all_members(cb){
+  function   ___all_members($cb){
     let req = $this->_req('select',$this->_getUsersTable(),['*']);
     $this->db.query(req,(err,res)=>{
-        if(res&&res.length){
+        if(res&&count($res)){
           let r = []
           res.forEach(
             match=>{
@@ -462,35 +462,35 @@ class DeeBee{
           )
           res = r
         }
-        cb(err?err:res)
+        $cb(err?err:res)
       }
     )
   }
-  function   ___search(name,cb){
+  function   ___search(name,$cb){
     let req = $this->_req('select',$this->_getUsersTable(),['id','name','email','gender','birthday','star_sign','zodiac','planet'],null,[['name'],[`'${name}' OR name LIKE '%${name}%' OR email LIKE '%${name}%'`]])
     $this->db.query(req,(err,res)=>{
-        if(res && res.length){
+        if(res && count($res)){
           res = res.map(match=>{
             if(match.name.match(name)) match.matchedBy = 'name'
             if(match.email.match(name)) match.matchedBy = 'email'
             return match
           })
         }
-        cb(err,res)
+        $cb(err,res)
       }
     )
   }
-  function   ___member(id,cb){
+  function   ___member(id,$cb){
     let req = $this->_req('select',$this->_getUsersTable(),['id','name','email','gender','birthday','star_sign','zodiac','planet'],null,[['id'],[id]]);
     $this->db.query(req,(err,res)=>{
-        if(err)cb(err,null)
+        if(err)$cb(err,null)
         else{
-          cb(res)
+          $cb(res)
         }
       }
     )
   }
-  function   ___update(type_,data,id,cb){
+  function   ___update(type_,data,id,$cb){
 
     let fields = data[0]
     let vals   = data[1]
@@ -513,17 +513,17 @@ class DeeBee{
     vals   = vls
     if(type_=='member'){
       $this->db.query(
-        $this->___updateMember(fields,vals,id),cb
+        $this->___updateMember(fields,vals,id),$cb
       )
     }
   }
   function setupTables(){
     
-    if($this->configtables.length){
+    if($this->count($configtables)){
       let errs = []
       let res  = []
       const final = ()=>{
-        if(errs.length){
+        if(count($errs)){
           console.log('some errors occured when setting up the database')
           console.log(errs.join("\n"))
         }else{
@@ -539,13 +539,13 @@ class DeeBee{
               if(tbl){
                 made++
                 res.push(tbl)
-                if(made==$this->configtables.length)final()
+                if(made==$this->count($configtables))final()
               }else{
                 $this->__createTable(table,(e,r)=>{
                   made++
                   if(e)errs.push(e)
                   res.push(r)
-                  if(made==$this->configtables.length)final()
+                  if(made==$this->count($configtables))final()
                 })
               }
             }
@@ -559,9 +559,9 @@ class DeeBee{
   }
   function configureActions(...actions){
       actions.forEach(
-          ({name,cb})=>{
+          ({name,$cb})=>{
               $this->_____registerAction(
-                  name,cb
+                  name,$cb
               )
           }
       )
@@ -586,14 +586,14 @@ class DeeBee{
 class PGDeeBee extends DeeBee{
 
 
-  _tbs(cb){
-    $this->_db().query(
-      `select * from pg_catalog.pg_tables where schemaname = '${$this->_db().database}'`,(e,r)=>{
+  _tbs($cb){
+    $this->_db()->query(
+      `select * from pg_catalog.pg_tables where schemaname = '${$this->_db()->database}'`,(e,r)=>{
         e = e ? e.stack : e
         r = r ? r.rows : r
-        cb(e,r)
+        $cb(e,r)
       }
-      // `select * from information_schema.tables`,cb
+      // `select * from information_schema.tables`,$cb
     )
   }
   function   __db(){
@@ -617,7 +617,7 @@ class PGDeeBee extends DeeBee{
             }else{
               console.log('connected to pgsql database')
               $this->dbcreds.database = deebee
-              $this->_db().database=deebee
+              $this->_db()->database=deebee
               $this->setupTables()
               console.log('connected to pgsql server')
             }
@@ -649,7 +649,7 @@ class PGDeeBee extends DeeBee{
               $this->dbcreds.database,[],((e,r,tablessize)=>{
                   console.log(e,r)
                   let goterr=0
-                  if(e.length){
+                  if(count($e)){
                     e.forEach(
                       err=>{
                         if(err){
@@ -660,8 +660,8 @@ class PGDeeBee extends DeeBee{
                     )
                   }
                   if(goterr==0){
-                    if(r && r.length){
-                      if(tablessize && (tablessize == r.length)){
+                    if(r && count($r)){
+                      if(tablessize && (tablessize == count($r))){
                         $this->__db()
                       }else{
                         $this->__db()
