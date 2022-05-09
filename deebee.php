@@ -1,59 +1,56 @@
 <?php
-let instances = [] 
-const {Pool} = require('pg')
-let resetDbErrs = ['ECONNRESET','PROTOCOL_PACKETS_OUT_OF_ORDER']
-const mysql = require('mysql');
-const {Ear} = require('@tek-tech/ears')
-// const PGDeeBee = require('./pgdeebee')
 
-class DeeBee extends Ear{
-
-  static getPGClass(){
-    return PGDeeBee 
-  }
-
-  static Builder = class {
-    static _table(name,fields,keys){
-      return {
-        name
-        ,fields:fields.map(
-          field=>{
-            return this._field(...field)
-          }
-        )
-        ,keys:this._keys(...keys)
-      }
-    }
-    static _field(name,type,attrs){
-      return {
-        name,type,attrs
-      }
-    }
-    static _keys(primary,foreign){
-      return {
-        primary,
-        foreign:this._foreignKeys(foreign)
-      }
-    }
-    static _foreignKeys(keys){
-      return keys.map(
-        key=>{
-          return this._foreignKey(key)
+$instances = [] ;
+class  Builder{
+  static function _table($name,$fields,$keys){
+    return [
+      'name'=>$name
+      ,'fields'=>fields.map(
+        field=>{
+          return $this->_field(...field)
         }
       )
-    }
-    static _foreignKey([name,[field,update,remove]]){
-      return {
-        name,
-        references:{
-          field,update,remove
-        }
-      }
+      ,'keys'=>$this->_keys(...$keys)
+      ];
+  }
+  static function _field($name,$type,$attrs){
+    return {
+      $name,$type,$attrs
     }
   }
+  static _keys($primary,$foreign){
+    return {
+      primary,
+      foreign:$this->_foreignKeys(foreign)
+    };
+  }
+  static _foreignKeys(keys){
+    return keys.map(
+      key=>{
+        return $this->_foreignKey(key)
+      }
+    );
+  }
+  static _foreignKey([name,[field,update,remove]]){
+    return {
+      name,
+      references:{
+        field,update,remove
+      }
+    };
+  }
+}
+
+class DeeBee{
+
+  static function getPGClass(){
+    return PGDeeBee ;
+  }
+
+  static Builder = Builder
 
 
-  filterIt(str){
+  function filterIt(str){
     if(str){
 
       str = str.split("").map(
@@ -66,28 +63,28 @@ class DeeBee extends Ear{
     return str
   }
 
-  builder(){
-    return DeeBee.Builder
+  function builder(){
+    return DeeBee->Builder
   }
 
-  _____registerAction(actionname,callback){
+  function _____registerAction(actionname,callback){
     this[actionname] = callback
   }
 
-  _tbs(cb){
-    this._db().query(
+  function _tbs(cb){
+    $this->_db().query(
       `SHOW TABLES`,cb
     )
   }
-  _tb_exists(name,cb){
+  function _tb_exists(name,cb){
     let exists = null
-    this._tbs(
+    $this->_tbs(
       (e,tbs)=>{
         
         if(e) cb(exists)
         else  tbs.length ? tbs.forEach(
           (table,idx)=>{
-            if(table[`Tables_in_${this.dbname}`]==name) exists = table[`Tables_in_${this.dbname}`]
+            if(table[`Tables_in_${$this->dbname}`]==name) exists = table[`Tables_in_${$this->dbname}`]
             if(idx+1==tbs.length)cb(exists)
           }
         ) : cb(exists)
@@ -95,46 +92,46 @@ class DeeBee extends Ear{
     )
   }
 
-  _setUsersTable(tbl = null){
-    this.usersTable = tbl
+  function _setUsersTable(tbl = null){
+    $this->usersTable = tbl
   }
-  _setUsersPasswField(field='password'){
-    this.usersPasswField = field
+  function _setUsersPasswField(field='password'){
+    $this->usersPasswField = field
   }
-  _getUsersPasswField(){
-    return this.usersPasswField
+  function _getUsersPasswField(){
+    return $this->usersPasswField
   }
-  _getUsersTable(tbl){
-    return this.usersTable
+  function _getUsersTable(tbl){
+    return $this->usersTable
   }
-  _setUsersLogField(field='name'){
-    this.usersLogField = field
+  function _setUsersLogField(field='name'){
+    $this->usersLogField = field
   }
-  _getUsersLogField(){
-    return this.usersLogField
+  function _getUsersLogField(){
+    return $this->usersLogField
   }
-  _getAdminsLogField(){
-    return this.adminsLogField
+  function _getAdminsLogField(){
+    return $this->adminsLogField
   }
-  _setAdminsTable(tbl = null){
-    this.adminsTable = tbl
+  function _setAdminsTable(tbl = null){
+    $this->adminsTable = tbl
   }
-  _setAdminsPasswField(field='password'){
-    this.AdminsPasswField = field
+  function _setAdminsPasswField(field='password'){
+    $this->AdminsPasswField = field
   }
-  _getAdminsPasswField(){
-    return this.AdminsPasswField
+  function _getAdminsPasswField(){
+    return $this->AdminsPasswField
   }
-  _getAdminsTable(tbl){
-    return this.adminsTable
+  function  _getAdminsTable(tbl){
+    return $this->adminsTable
   }
-  _setAdminsLogField(field='name'){
-    this.adminsLogField = field
+  function _setAdminsLogField(field='name'){
+    $this->adminsLogField = field
   }
-  _getAdminsLogField(){
-    return this.adminsLogField
+  function _getAdminsLogField(){
+    return $this->adminsLogField
   }
-  __newFieldStr({name,type,attrs}){
+  function __newFieldStr({name,type,attrs}){
     let fieldstr = `${name} ${type}`
     if(attrs&&attrs.length)attrs.forEach(
       attrname=>{
@@ -143,16 +140,16 @@ class DeeBee extends Ear{
     )
     return fieldstr
   }
-  __newFieldsStr(fields){
+  function   __newFieldsStr(fields){
     let fieldsStr = ``
     fields.forEach(
       field=>{
-        fieldsStr = `${fieldsStr == `` ? fieldsStr : `${fieldsStr},`}${this.__newFieldStr(field)}`
+        fieldsStr = `${fieldsStr == `` ? fieldsStr : `${fieldsStr},`}${$this->__newFieldStr(field)}`
       }
     )
     return fieldsStr
   }
-  __newKeyStr({name,attrs,references}){
+  function   __newKeyStr({name,attrs,references}){
     let keyStr = `${name}`
     if(attrs){
       attrs.forEach(
@@ -175,39 +172,39 @@ class DeeBee extends Ear{
     }
     return keyStr
   }
-  __newKeysStr(keys){
+  function   __newKeysStr(keys){
     let keysStr = ``
     if(keys.hasOwnProperty('primary') && keys.primary){
-      keysStr = `${keysStr} ${this.__newKeyStr({name:`PRIMARY KEY (${keys.primary})`,attrs:[]})}`
+      keysStr = `${keysStr} ${$this->__newKeyStr({name:`PRIMARY KEY (${keys.primary})`,attrs:[]})}`
     }
     if(keys.hasOwnProperty('foreign') && keys.foreign!=undefined){
       if(keys.foreign.length){
         keys.foreign.forEach(
           key=>{
             key.name = `,FOREIGN KEY ${key.name}`
-            keysStr = `${keysStr} ${this.__newKeyStr(key)}`
+            keysStr = `${keysStr} ${$this->__newKeyStr(key)}`
           }
         )
       }
     }
     return keysStr
   }
-  __newTableReq({name,fields,keys}){
-    return `CREATE TABLE IF NOT EXISTS ${name} (${this.__newFieldsStr(fields)} , ${this.__newKeysStr(keys)})`
+  function   __newTableReq({name,fields,keys}){
+    return `CREATE TABLE IF NOT EXISTS ${name} (${$this->__newFieldsStr(fields)} , ${$this->__newKeysStr(keys)})`
   }
-  __createTable(table,cb){
+  function   __createTable(table,cb){
     if(table){
-      let req = this.__newTableReq(table)
-      this._db().query(
+      let req = $this->__newTableReq(table)
+      $this->_db().query(
         req,cb
       )
     }else{
       cb(`provided argument ${table} is incorrect`,null)
     }
   }
-  __createDataBase(name,tables,cb){
+  function   __createDataBase(name,tables,cb){
     let req = `create DATABASE IF NOT EXISTS ${name}`
-    this._db().query(
+    $this->_db().query(
       req,(err,res)=>{
         if(err){
           cb(err,res)
@@ -218,7 +215,7 @@ class DeeBee extends Ear{
             if(tables.length){
               tables.forEach(
                 (table,idx)=>{
-                  this.__createTable(table,(e,r)=>{
+                  $this->__createTable(table,(e,r)=>{
                     errs.push(e)
                     ress.push(r)
                     if(idx+1==tables.length){
@@ -238,73 +235,73 @@ class DeeBee extends Ear{
       }
     )
   }
-  __dropTable(table,cb){
+  function   __dropTable(table,cb){
     let req = `DROP TABLE ${table}`
-    this._db().query(
+    $this->_db().query(
       req,cb
     )
   }
-  _db(){
-    return this.db
+  function _db(){
+    return $this->db
   }
-  __db(){
+  function   __db(){
     try{
-      var deebee = this.dbcreds.database
-      this.db = mysql.createConnection(this.dbcreds)
-      this.db.on(
+      var deebee = $this->dbcreds.database
+      $this->db = mysql.createConnection($this->dbcreds)
+      $this->db.on(
         'error',err=>{
-          this.handleConnectErr(err,deebee)    
+          $this->handleConnectErr(err,deebee)    
         }
       )
-      this.db.connect(
+      $this->db.connect(
         err=>{
           try{
             if(err){
               if(resetDbErrs.includes(err)){
                 console.log('error encounteered, made a fix\nretrying connection to database')
               }else{
-                this.handleConnectErr(err,deebee)
+                $this->handleConnectErr(err,deebee)
               }
             }else{
-              this.db.query(
+              $this->db.query(
                 `use ${deebee}`,(e,r)=>{
                   if(e){
-                    this.handleConnectErr(e,deebee)
+                    $this->handleConnectErr(e,deebee)
                   }if(r){
                     console.log('connected to mysql database')
-                    this.dbcreds.database = deebee
-                    this._db().config.database=deebee
-                    this.setupTables()
+                    $this->dbcreds.database = deebee
+                    $this->_db().config.database=deebee
+                    $this->setupTables()
                   }
                 }
               )
               console.log('connected to mysql server')
             }
           }catch(e){
-            if(resetDbErrs.includes(e.code)) this._db()
-            this.handleConnectErr(e,deebee)
+            if(resetDbErrs.includes(e.code)) $this->_db()
+            $this->handleConnectErr(e,deebee)
           }
         }
       )
-      return this.db;
+      return $this->db;
     }catch(e){
-      if(resetDbErrs.includes(e.code)) this._db()
-      this.handleConnectErr(e,deebee)
+      if(resetDbErrs.includes(e.code)) $this->_db()
+      $this->handleConnectErr(e,deebee)
     }
   }
-  handleConnectErr(err,deebee){
+  function handleConnectErr(err,deebee){
     if(err.sqlMessage==`Unknown database '${deebee}'`){
-      this.dbcreds.database = deebee
-      deebee = this.dbname
-      this.dbcreds.database = ''
-      this.db = mysql.createConnection(this.dbcreds)
-      this.db.connect(
+      $this->dbcreds.database = deebee
+      deebee = $this->dbname
+      $this->dbcreds.database = ''
+      $this->db = mysql.createConnection($this->dbcreds)
+      $this->db.connect(
         err=>{
-          if(err)this.handleConnectErr(err)
+          if(err)$this->handleConnectErr(err)
           else{
-            this.dbcreds.database = deebee
-            this.__createDataBase(
-              this.dbcreds.database,[],((e,r,tablessize)=>{
+            $this->dbcreds.database = deebee
+            $this->__createDataBase(
+              $this->dbcreds.database,[],((e,r,tablessize)=>{
                   console.log(e,r)
                   let goterr=0
                   if(e.length){
@@ -320,12 +317,12 @@ class DeeBee extends Ear{
                   if(goterr==0){
                     if(r && r.length){
                       if(tablessize && (tablessize == r.length)){
-                        this.__db()
+                        $this->__db()
                       }else{
-                        this.__db()
+                        $this->__db()
                       }
                     }else{
-                      this.__db()
+                      $this->__db()
                     }
                   }
                 }
@@ -337,16 +334,16 @@ class DeeBee extends Ear{
       console.log(`database ${deebee} not found creating it`)
     }else{
       console.log(err.hasOwnProperty('sqlMessage')?err.sqlMessage:err)
-      this.__db()
+      $this->__db()
     }
   }
-  __reqArr(fields_,vals_,statement){
+  function   __reqArr(fields_,vals_,statement){
       for(let i = 0; i < (fields_.length) ; i++){
         statement.bindParam(":"+fields_[i],vals_[i]);
       }
       return statement;
   }
-  __valsStr(vals_,bef='',aft=''){
+  function   __valsStr(vals_,bef='',aft=''){
     let vals="";
     for(let i = 0 ; i < (vals_.length) ;i++ ){
       vals+=(bef)+vals_[i]+(i+1 < (vals_.length) ? "," : "")+(aft);
@@ -354,42 +351,42 @@ class DeeBee extends Ear{
 
     return vals;
   }
-  __fvalStr(fields_=[],vals_=[],sep=',',bef='',aft='',vbef=""){
+  function   __fvalStr(fields_=[],vals_=[],sep=',',bef='',aft='',vbef=""){
     let vals = "";
     for(let i = 0 ; i < (vals_.length) ;i++ ){
       vals+=(bef)+fields_[i]+"="+vbef+vals_[i]+(i+1 < (vals_.length) ? " "+sep+" " : "")+(aft);
     }
     return vals;
   }
-  __condsStr(fields_=[],vals_=[],bef=""){
-    return (fields_.length) ? " WHERE "+this.__fvalStr(fields_,bef?fields_:vals_,"AND","","",bef) : "";
+  function   __condsStr(fields_=[],vals_=[],bef=""){
+    return (fields_.length) ? " WHERE "+$this->__fvalStr(fields_,bef?fields_:vals_,"AND","","",bef) : "";
   }
-  __selectFrom(table_,fields_=[],conds=[[],[]]){
-    return "SELECT "+this.__valsStr(fields_)+" FROM "+ table_ +((conds.length) ? this.__condsStr(conds[0],conds[1]) : "");
+  function   __selectFrom(table_,fields_=[],conds=[[],[]]){
+    return "SELECT "+$this->__valsStr(fields_)+" FROM "+ table_ +((conds.length) ? $this->__condsStr(conds[0],conds[1]) : "");
   }
-  __delFrom(table_,conds=[[],[]]){
-    return "DELETE  FROM "+ table_ + this.__condsStr(conds[0],conds[1],":");
+  function   __delFrom(table_,conds=[[],[]]){
+    return "DELETE  FROM "+ table_ + $this->__condsStr(conds[0],conds[1],":");
   }
-  __updtWhere(table_,fields_,vals_,conds=[[],[]]){
-    return "UPDATE "+ table_ +" SET "+ this.__fvalStr(fields_,vals_,",") +this.__condsStr(conds[0],conds[1]);
+  function   __updtWhere(table_,fields_,vals_,conds=[[],[]]){
+    return "UPDATE "+ table_ +" SET "+ $this->__fvalStr(fields_,vals_,",") +$this->__condsStr(conds[0],conds[1]);
   }
-  __insertINTO(table,fields_=[],vals_=[]){
-    return "INSERT INTO "+table+" ("+this.__valsStr(fields_)+") VALUES ("+this.__valsStr(vals_)+")";
+  function   __insertINTO(table,fields_=[],vals_=[]){
+    return "INSERT INTO "+table+" ("+$this->__valsStr(fields_)+") VALUES ("+$this->__valsStr(vals_)+")";
   }
-  _req(type_,table_,fields_=[],vals_=[],conds=[[],[]]){
+  function _req(type_,table_,fields_=[],vals_=[],conds=[[],[]]){
     let req = "";
     switch (type_) {
       case 'select':
-        req = this.__selectFrom(table_,fields_,conds);
+        req = $this->__selectFrom(table_,fields_,conds);
         break;
       case 'insert':
-        req = this.__insertINTO(table_,fields_,vals_);
+        req = $this->__insertINTO(table_,fields_,vals_);
         break;
       case 'delete':
-        req = this.__delFrom(table_,conds);
+        req = $this->__delFrom(table_,conds);
         break;
       case 'update':
-        req = this.__updtWhere(table_,fields_,vals_,conds);
+        req = $this->__updtWhere(table_,fields_,vals_,conds);
         break;
       default:
         // code...
@@ -397,16 +394,16 @@ class DeeBee extends Ear{
     }
     return req;
   }
-  _insertReq(table_,fields_,vals_,c){
-    return this._req(
+  function _insertReq(table_,fields_,vals_,c){
+    return $this->_req(
           'insert'
           ,table_
           ,fields_
           ,vals_
         )
   }
-  _updateReq(table_,fields_,vals_,conds_){
-    return this._req(
+  function _updateReq(table_,fields_,vals_,conds_){
+    return $this->_req(
           'update'
           ,table_
           ,fields_
@@ -414,47 +411,47 @@ class DeeBee extends Ear{
           ,conds_
         )
   }
-  _delReq(table_,conds_,cb){
-    return this._req(
+  function _delReq(table_,conds_,cb){
+    return $this->_req(
       'delete',
       table_,
       conds_
     )
   }
-  ___updateMember(fields_,vals_,id=null){
-    let table=this._getUsersTable();
+  function   ___updateMember(fields_,vals_,id=null){
+    let table=$this->_getUsersTable();
     let conds=[
       ['id']
       ,[id]
     ];
-    return this._updateReq(table,fields_,vals_,conds);
+    return $this->_updateReq(table,fields_,vals_,conds);
   }
-  ___loginreq(table,user,pass){
-    return this._req("select",table,["id",this._getUsersLogField()],[],[[this._getUsersLogField(),this._getUsersPasswField()],["'"+user+"'",`password('${pass}')`]]);
+  function   ___loginreq(table,user,pass){
+    return $this->_req("select",table,["id",$this->_getUsersLogField()],[],[[$this->_getUsersLogField(),$this->_getUsersPasswField()],["'"+user+"'",`password('${pass}')`]]);
   }
-  ___delMember(name,id=null){
-    let table=this._getUsersTable();
+  function   ___delMember(name,id=null){
+    let table=$this->_getUsersTable();
     let conds=[
-      [''+(id?'id':this._getUsersLogField())]
+      [''+(id?'id':$this->_getUsersLogField())]
       ,[''+(id?id:name)]
     ];
-    return this._delReq(table,conds);
+    return $this->_delReq(table,conds);
   }
-  ___newNotification({member_id,concerned_id,type_}){
+  function   ___newNotification({member_id,concerned_id,type_}){
     let fields = ['member_id','concerned_id','type'];
     let vals   = [`${member_id}`,`${concerned_id}`,`'${type_}'`];
     let table  = '_notifications';
-    return this._insertReq(table,fields,vals);
+    return $this->_insertReq(table,fields,vals);
   }
-  ___login(user,pass,cb){
-    this.db.query(
-      this.___loginreq(this._getUsersTable(),user,pass)
+  function   ___login(user,pass,cb){
+    $this->db.query(
+      $this->___loginreq($this->_getUsersTable(),user,pass)
       ,cb
     )
   }
-  ___all_members(cb){
-    let req = this._req('select',this._getUsersTable(),['*']);
-    this.db.query(req,(err,res)=>{
+  function   ___all_members(cb){
+    let req = $this->_req('select',$this->_getUsersTable(),['*']);
+    $this->db.query(req,(err,res)=>{
         if(res&&res.length){
           let r = []
           res.forEach(
@@ -469,9 +466,9 @@ class DeeBee extends Ear{
       }
     )
   }
-  ___search(name,cb){
-    let req = this._req('select',this._getUsersTable(),['id','name','email','gender','birthday','star_sign','zodiac','planet'],null,[['name'],[`'${name}' OR name LIKE '%${name}%' OR email LIKE '%${name}%'`]])
-    this.db.query(req,(err,res)=>{
+  function   ___search(name,cb){
+    let req = $this->_req('select',$this->_getUsersTable(),['id','name','email','gender','birthday','star_sign','zodiac','planet'],null,[['name'],[`'${name}' OR name LIKE '%${name}%' OR email LIKE '%${name}%'`]])
+    $this->db.query(req,(err,res)=>{
         if(res && res.length){
           res = res.map(match=>{
             if(match.name.match(name)) match.matchedBy = 'name'
@@ -483,9 +480,9 @@ class DeeBee extends Ear{
       }
     )
   }
-  ___member(id,cb){
-    let req = this._req('select',this._getUsersTable(),['id','name','email','gender','birthday','star_sign','zodiac','planet'],null,[['id'],[id]]);
-    this.db.query(req,(err,res)=>{
+  function   ___member(id,cb){
+    let req = $this->_req('select',$this->_getUsersTable(),['id','name','email','gender','birthday','star_sign','zodiac','planet'],null,[['id'],[id]]);
+    $this->db.query(req,(err,res)=>{
         if(err)cb(err,null)
         else{
           cb(res)
@@ -493,7 +490,7 @@ class DeeBee extends Ear{
       }
     )
   }
-  ___update(type_,data,id,cb){
+  function   ___update(type_,data,id,cb){
 
     let fields = data[0]
     let vals   = data[1]
@@ -501,7 +498,7 @@ class DeeBee extends Ear{
     let  vls  = []
     fields.forEach(
       (fld,i)=>{
-        if(fld!=this._getUsersPasswField()){
+        if(fld!=$this->_getUsersPasswField()){
           flds.push(fields[i])
           vls.push(vals[i])
         }else{
@@ -515,14 +512,14 @@ class DeeBee extends Ear{
     fields = flds
     vals   = vls
     if(type_=='member'){
-      this.db.query(
-        this.___updateMember(fields,vals,id),cb
+      $this->db.query(
+        $this->___updateMember(fields,vals,id),cb
       )
     }
   }
-  setupTables(){
+  function setupTables(){
     
-    if(this.configtables.length){
+    if($this->configtables.length){
       let errs = []
       let res  = []
       const final = ()=>{
@@ -531,24 +528,24 @@ class DeeBee extends Ear{
           console.log(errs.join("\n"))
         }else{
           console.log('DeeBee is Ready')
-          this.ready = 1
+          $this->ready = 1
         }
       }
       let made = 0
-      this.configtables.forEach(
+      $this->configtables.forEach(
         (table,idx)=>{
-          this._tb_exists(
+          $this->_tb_exists(
             table.name,tbl=>{
               if(tbl){
                 made++
                 res.push(tbl)
-                if(made==this.configtables.length)final()
+                if(made==$this->configtables.length)final()
               }else{
-                this.__createTable(table,(e,r)=>{
+                $this->__createTable(table,(e,r)=>{
                   made++
                   if(e)errs.push(e)
                   res.push(r)
-                  if(made==this.configtables.length)final()
+                  if(made==$this->configtables.length)final()
                 })
               }
             }
@@ -557,30 +554,30 @@ class DeeBee extends Ear{
       )
     }else{
       console.log('DeeBee is Ready')
-      this.ready = 1
+      $this->ready = 1
     }
   }
-  configureActions(...actions){
+  function configureActions(...actions){
       actions.forEach(
           ({name,cb})=>{
-              this._____registerAction(
+              $this->_____registerAction(
                   name,cb
               )
           }
       )
   }
-  constructor(creds,tables=[],type='mysql',dontconnect=false){
+  function __construct(creds,tables=[],type='mysql',dontconnect=false){
     super()
     if(type=='pg'){
       return new PGDeeBee(creds,tables)
     }
-    this.configtables = tables
-    this.dbname = creds.database
-    this.db = null;
-    this.dbcreds = creds
-    this._setUsersTable('_members')
+    $this->configtables = tables
+    $this->dbname = creds.database
+    $this->db = null;
+    $this->dbcreds = creds
+    $this->_setUsersTable('_members')
     if(dontconnect) return this
-    this.__db()
+    $this->__db()
   }
 
 }
@@ -590,8 +587,8 @@ class PGDeeBee extends DeeBee{
 
 
   _tbs(cb){
-    this._db().query(
-      `select * from pg_catalog.pg_tables where schemaname = '${this._db().database}'`,(e,r)=>{
+    $this->_db().query(
+      `select * from pg_catalog.pg_tables where schemaname = '${$this->_db().database}'`,(e,r)=>{
         e = e ? e.stack : e
         r = r ? r.rows : r
         cb(e,r)
@@ -599,57 +596,57 @@ class PGDeeBee extends DeeBee{
       // `select * from information_schema.tables`,cb
     )
   }
-  __db(){
+  function   __db(){
     try{
-      var deebee = this.dbcreds.database
-      this.db = new Pool(this.dbcreds)
-      this.db.on(
+      var deebee = $this->dbcreds.database
+      $this->db = new Pool($this->dbcreds)
+      $this->db.on(
         'error',err=>{
-          this.handleConnectErr(err,deebee)    
+          $this->handleConnectErr(err,deebee)    
         }
       )
-      this.db.connect(
+      $this->db.connect(
         err=>{
           try{
             if(err){
               if(resetDbErrs.includes(err)){
                 console.log('error encounteered, made a fix\nretrying connection to database')
               }else{
-                this.handleConnectErr(err,deebee)
+                $this->handleConnectErr(err,deebee)
               }
             }else{
               console.log('connected to pgsql database')
-              this.dbcreds.database = deebee
-              this._db().database=deebee
-              this.setupTables()
+              $this->dbcreds.database = deebee
+              $this->_db().database=deebee
+              $this->setupTables()
               console.log('connected to pgsql server')
             }
           }catch(e){
-            if(resetDbErrs.includes(e.code)) this._db()
-            this.handleConnectErr(e,deebee)
+            if(resetDbErrs.includes(e.code)) $this->_db()
+            $this->handleConnectErr(e,deebee)
           }
         }
       )
-      return this.db;
+      return $this->db;
     }catch(e){
-      if(resetDbErrs.includes(e.code)) this._db()
-      this.handleConnectErr(e,deebee)
+      if(resetDbErrs.includes(e.code)) $this->_db()
+      $this->handleConnectErr(e,deebee)
     }
   }
   handleConnectErr(err,deebee){
     if(err.toString().match('too many clients already')) return
     if(err.toString().match(`database "${deebee}" does not exist`)){
-      this.dbcreds.database = deebee
-      deebee = this.dbname
-      this.dbcreds.database = ''
-      this.db = new Pool(this.dbcreds)
-      this.db.connect(
+      $this->dbcreds.database = deebee
+      deebee = $this->dbname
+      $this->dbcreds.database = ''
+      $this->db = new Pool($this->dbcreds)
+      $this->db.connect(
         err=>{
-          if(err)this.handleConnectErr(err)
+          if(err)$this->handleConnectErr(err)
           else{
-            this.dbcreds.database = deebee
-            this.__createDataBase(
-              this.dbcreds.database,[],((e,r,tablessize)=>{
+            $this->dbcreds.database = deebee
+            $this->__createDataBase(
+              $this->dbcreds.database,[],((e,r,tablessize)=>{
                   console.log(e,r)
                   let goterr=0
                   if(e.length){
@@ -665,12 +662,12 @@ class PGDeeBee extends DeeBee{
                   if(goterr==0){
                     if(r && r.length){
                       if(tablessize && (tablessize == r.length)){
-                        this.__db()
+                        $this->__db()
                       }else{
-                        this.__db()
+                        $this->__db()
                       }
                     }else{
-                      this.__db()
+                      $this->__db()
                     }
                   }
                 }
@@ -682,7 +679,7 @@ class PGDeeBee extends DeeBee{
       console.log(`database ${deebee} not found creating it`)
     }else{
       console.log(err.hasOwnProperty('sqlMessage')?err.sqlMessage:err)
-      this.__db()
+      $this->__db()
     }
   }
 
@@ -700,12 +697,12 @@ class PGDeeBee extends DeeBee{
   }
   constructor(creds,tables=[]){
     super(creds,tables)
-    this.configtables = tables
-    this.dbname = creds.database
-    this.db = null;
-    this.dbcreds = creds
-    this._setUsersTable('_members')
-    this.__db()
+    $this->configtables = tables
+    $this->dbname = creds.database
+    $this->db = null;
+    $this->dbcreds = creds
+    $this->_setUsersTable('_members')
+    $this->__db()
   }
 
 }
